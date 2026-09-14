@@ -18,4 +18,4 @@
 
 ## Version
 
-v3.0 — MV + LV + GPS
+v1.3 — MV + LV + GPS
