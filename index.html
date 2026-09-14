@@ -537,7 +537,7 @@
         <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200 card-hover">
           <h2 class="text-base sm:text-lg font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
             <i class="fa-solid fa-video text-blue-600 text-lg sm:text-xl"></i> 
-            ขั้นตอนการ Rack Out 11kV Breaker (MV)
+            ขั้นตอนการ Rack Out Breaker (MV)
           </h2>
           <div class="aspect-video w-full bg-slate-900 rounded-xl overflow-hidden relative">
             <iframe class="w-full h-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="MV Operation Guide" frameborder="0" allowfullscreen loading="lazy"></iframe>
@@ -797,19 +797,19 @@
           <div class="checklist-item" data-lv-step="1">
             <label class="flex items-start gap-2 sm:gap-3 cursor-pointer">
               <input type="checkbox" id="chk_lv_breaker" onchange="onLvStepCheck(1)">
-              <span class="label-text"><span class="step-badge">1</span>Breaker OFF (Open) <span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">1</span>สวม PPE ครบถ้วน <span class="text-red-500">*</span></span>
             </label>
           </div>
           <div class="checklist-item disabled" data-lv-step="2">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_lv_rackout" disabled onchange="onLvStepCheck(2)">
-              <span class="label-text"><span class="step-badge">2</span>Rack Out Breaker ไป Disconnected <span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">2</span>Breaker OFF (Open) <span class="text-red-500">*</span></span>
             </label>
           </div>
           <div class="checklist-item disabled" data-lv-step="3">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_lv_ppe" disabled onchange="onLvStepCheck(3)">
-              <span class="label-text"><span class="step-badge">3</span>สวม PPE ครบถ้วน <span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">3</span>Rack Out Breaker ไป Disconnected<span class="text-red-500">*</span></span>
             </label>
           </div>
         </div>
