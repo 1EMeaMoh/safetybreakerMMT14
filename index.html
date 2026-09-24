@@ -35,7 +35,7 @@
       border-bottom: 3px solid transparent;
       padding: 10px 6px;
       font-weight: 500;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: #64748b;
       cursor: pointer;
       user-select: none;
@@ -49,13 +49,17 @@
       border-right: none;
     }
     @media (min-width: 640px) {
-      .tab-btn { font-size: 0.875rem; padding: 12px 8px; }
+      .tab-btn { font-size: 0.85rem; padding: 12px 8px; }
     }
     .tab-btn:hover { color: #1e40af; background: #f8fafc; }
     .tab-btn.active {
       color: #1e40af;
       border-bottom-color: #2563eb;
       font-weight: 600;
+    }
+    .tab-btn.active.maintenance-tab {
+      color: #b45309;
+      border-bottom-color: #f59e0b;
     }
     .tab-btn i { margin-right: 4px; font-size: 0.85em; }
     
@@ -185,7 +189,7 @@
       .checklist-item .label-text { font-size: 0.875rem; }
     }
     
-    /* ===== SKIPPED STATE (ข้อที่ไม่บังคับ) ===== */
+    /* ===== SKIPPED STATE ===== */
     .checklist-item.skipped {
       border-color: #fcd34d;
       background: #fffbeb;
@@ -209,6 +213,12 @@
       text-transform: uppercase;
     }
     
+    /* ===== MAINTENANCE THEME ===== */
+    .maintenance-item .step-badge { background: #fef3c7; color: #b45309; }
+    .maintenance-item.done { border-color: #fcd34d; background: #fffbeb; }
+    .maintenance-item.done .step-badge { background: #f59e0b; color: white; }
+    .maintenance-item.done input[type="checkbox"] { accent-color: #f59e0b; }
+    
     /* ===== PROGRESS BAR ===== */
     .progress-bar { height: 4px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
     .progress-bar .fill {
@@ -217,6 +227,9 @@
       border-radius: 4px;
       transition: width 0.4s ease;
       width: 0%;
+    }
+    .progress-bar .fill.maintenance {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
     }
     
     /* ===== CAMERA ===== */
@@ -340,6 +353,30 @@
     }
     .btn-success:active { transform: scale(0.97); }
     
+    .btn-warning {
+      background: #f59e0b;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      width: 100%;
+    }
+    @media (min-width: 640px) {
+      .btn-warning { padding: 10px 20px; font-size: 0.9rem; width: auto; }
+    }
+    .btn-warning:active { transform: scale(0.97); }
+    .btn-warning:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
     .btn-danger {
       background: #ef4444;
       color: white;
@@ -361,9 +398,14 @@
     
     /* ===== INPUTS ===== */
     input:focus,
-    select:focus {
+    select:focus,
+    textarea:focus {
       outline: none;
       border-color: #3b82f6;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
     }
     
     /* ===== RESPONSIVE HELPERS ===== */
@@ -386,19 +428,6 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
-    .live-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: #22c55e;
-      border-radius: 50%;
-      animation: pulse-dot 1.5s ease-in-out infinite;
-      margin-right: 6px;
-    }
-    .truncate-mobile { white-space: normal; word-break: break-word; }
-    @media (max-width: 480px) {
-      .text-xs-mobile { font-size: 0.7rem; }
-    }
     
     /* ===== TYPE BADGE ===== */
     .type-badge {
@@ -414,6 +443,21 @@
     }
     .type-badge.mv { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
     .type-badge.lv { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+    
+    /* ===== ROLE BADGE ===== */
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .role-badge.operator { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+    .role-badge.maintenance { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
     
     /* ===== GPS BOX ===== */
     .gps-box {
@@ -474,6 +518,70 @@
     @media (min-width: 640px) {
       .skip-wrapper label { font-size: 0.8rem; }
     }
+    
+    /* ===== LOADING OVERLAY ===== */
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 9998;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #loadingOverlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .loading-content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px 32px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-text {
+      font-size: 0.85rem;
+      color: #475569;
+      font-weight: 500;
+    }
+    
+    /* ===== MAINTENANCE HEADER ===== */
+    .maintenance-header {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 1px solid #fcd34d;
+    }
+    .maintenance-header h3 {
+      color: #92400e;
+    }
+    .maintenance-header i {
+      color: #d97706;
+    }
+    
+    /* ===== TAB SCROLL ===== */
+    .tab-nav-scroll {
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .tab-nav-scroll::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body>
@@ -497,16 +605,19 @@
         </span>
       </div>
       
-      <!-- Tabs -->
-      <nav class="flex gap-0.5 sm:gap-1 text-xs sm:text-sm overflow-x-auto">
+      <!-- Tabs (4 tabs) -->
+      <nav class="flex gap-0.5 sm:gap-1 text-xs sm:text-sm tab-nav-scroll">
         <button onclick="switchTab(1)" id="btnTab1" class="tab-btn">
-          <i class="fa-solid fa-circle-play"></i> <span class="hidden xs:inline">คู่มือ</span><span class="xs:hidden">VDO</span>
+          <i class="fa-solid fa-circle-play"></i> <span class="hidden sm:inline">คู่มือ</span><span class="sm:hidden">Guide</span>
         </button>
         <button onclick="switchTab(2)" id="btnTab2" class="tab-btn active">
-          <i class="fa-solid fa-clipboard-check"></i> Checklist
+          <i class="fa-solid fa-clipboard-check"></i> <span class="hidden sm:inline">Operator</span><span class="sm:hidden">OP</span>
         </button>
         <button onclick="switchTab(3)" id="btnTab3" class="tab-btn">
-          <i class="fa-solid fa-envelope-open-text"></i> <span class="hidden xs:inline">จัดการ Email</span><span class="xs:hidden">Email</span>
+          <i class="fa-solid fa-screwdriver-wrench"></i> <span class="hidden sm:inline">Maintenance</span><span class="sm:hidden">MT</span>
+        </button>
+        <button onclick="switchTab(4)" id="btnTab4" class="tab-btn">
+          <i class="fa-solid fa-envelope-open-text"></i> <span class="hidden sm:inline">Email</span><span class="sm:hidden">Email</span>
         </button>
       </nav>
     </div>
@@ -533,11 +644,10 @@
       <!-- ===== MV Guide ===== -->
       <div id="guideMV" class="space-y-4 sm:space-y-5">
         
-        <!-- VDO MV -->
         <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200 card-hover">
           <h2 class="text-base sm:text-lg font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
             <i class="fa-solid fa-video text-blue-600 text-lg sm:text-xl"></i> 
-            ขั้นตอนการ Rack Out Breaker (MV)
+            ขั้นตอนการ Rack Out 11kV Breaker (MV)
           </h2>
           <div class="aspect-video w-full bg-slate-900 rounded-xl overflow-hidden relative">
             <iframe class="w-full h-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="MV Operation Guide" frameborder="0" allowfullscreen loading="lazy"></iframe>
@@ -550,7 +660,6 @@
           </div>
         </div>
 
-        <!-- ขั้นตอน + ข้อควรระวัง MV -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-5 border border-slate-200 card-hover">
             <div class="flex items-start gap-3 sm:gap-4">
@@ -562,8 +671,8 @@
                 <ol class="text-xs sm:text-sm text-slate-600 mt-2 space-y-1.5 list-decimal list-inside">
                   <li>ตรวจสอบ <b>PTW</b> และตัดแยกระบบ <b>LOTO</b></li>
                   <li>สวม <b>PPE</b> ครบถ้วน (Arc Flash Suit)</li>
-                  <li>ตรวจสอบไฟ <b>LED</b> สถานะ Open</li>
-                  <li>ปรับ <b>Selector Switch</b> เป็น OFF </li>
+                  <li>ตรวจสอบไฟ <b>LED</b> สถานะ Open/Close</li>
+                  <li>ปรับ <b>Selector Switch</b> เป็น OFF / Local</li>
                   <li>ปลด <b>Release SW TRUCK</b></li>
                   <li><b>Rack Out</b> Breaker ไป Disconnected</li>
                   <li>สับ <b>Ground Switch</b> Close (ถ้ามี)</li>
@@ -597,7 +706,6 @@
       <!-- ===== LV Guide ===== -->
       <div id="guideLV" class="space-y-4 sm:space-y-5 hidden">
         
-        <!-- VDO LV -->
         <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200 card-hover">
           <h2 class="text-base sm:text-lg font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
             <i class="fa-solid fa-video text-amber-600 text-lg sm:text-xl"></i> 
@@ -614,7 +722,6 @@
           </div>
         </div>
 
-        <!-- ขั้นตอน + ข้อควรระวัง LV -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-5 border border-slate-200 card-hover">
             <div class="flex items-start gap-3 sm:gap-4">
@@ -656,8 +763,19 @@
 
     </section>
 
-    <!-- ===== TAB 2: SAFETY CHECKLIST ===== -->
+    <!-- ===== TAB 2: SAFETY CHECKLIST (OPERATOR) ===== -->
     <section id="tab2" class="space-y-4 sm:space-y-5">
+      
+      <!-- Operator Header -->
+      <div class="bg-blue-50 rounded-2xl border border-blue-200 p-3 sm:p-4">
+        <div class="flex items-center gap-2">
+          <span class="role-badge operator">
+            <i class="fa-solid fa-user-gear"></i> OPERATOR
+          </span>
+          <span class="text-xs sm:text-sm text-blue-800 font-medium">แบบฟอร์มตรวจสอบก่อนปฏิบัติงาน</span>
+        </div>
+      </div>
+
       <!-- Info Card -->
       <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -689,7 +807,7 @@
         </div>
         <div class="mt-3 sm:mt-4">
           <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            รหัส/ชื่อ ผู้ปฏิบัติงาน <span class="text-red-500">*</span>
+            รหัส/ชื่อ ผู้ปฏิบัติงาน (Operator) <span class="text-red-500">*</span>
           </label>
           <input type="text" id="operatorId" placeholder="กรอกรหัสพนักงานหรือชื่อ" oninput="validateChecklistForm()" class="w-full mt-1 p-2 sm:p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white text-sm sm:text-base">
         </div>
@@ -742,19 +860,19 @@
           <div class="checklist-item disabled" data-step="3">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_led" disabled onchange="onStepCheck(3)">
-              <span class="label-text"><span class="step-badge">3</span>ตรวจสอบไฟ LED สถานะ Open <span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">3</span>ตรวจสอบไฟ LED สถานะ Open/Close <span class="text-red-500">*</span></span>
             </label>
           </div>
           <div class="checklist-item disabled" data-step="4">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_selector" disabled onchange="onStepCheck(4)">
-              <span class="label-text"><span class="step-badge">4</span>ปรับ Selector Switch Remote/Local เป็น OFF  <span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">4</span>ปรับ Selector Switch เป็น OFF/Local <span class="text-red-500">*</span></span>
             </label>
           </div>
           <div class="checklist-item disabled" data-step="5">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_release" disabled onchange="onStepCheck(5)">
-              <span class="label-text"><span class="step-badge">5</span>ปลดสวิตช์ Release SW OFF เป็น TRUCK <span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">5</span>ปลดสวิตช์ Release SW TRUCK <span class="text-red-500">*</span></span>
             </label>
           </div>
           <div class="checklist-item disabled" data-step="6">
@@ -764,7 +882,6 @@
             </label>
           </div>
           
-          <!-- ⭐ Item 7: Ground Switch — Optional -->
           <div class="checklist-item disabled" data-step="7">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_ground" disabled onchange="onStepCheck(7)">
@@ -774,7 +891,6 @@
                 <span class="optional-badge">ไม่บังคับ</span>
               </span>
             </label>
-            <!-- Skip option (แสดงเมื่อข้อ 7 unlock) -->
             <div id="skipGroundWrapper" class="skip-wrapper hidden">
               <input type="checkbox" id="chk_ground_skip" onchange="onGroundSkipChange()">
               <label for="chk_ground_skip">
@@ -797,19 +913,19 @@
           <div class="checklist-item" data-lv-step="1">
             <label class="flex items-start gap-2 sm:gap-3 cursor-pointer">
               <input type="checkbox" id="chk_lv_breaker" onchange="onLvStepCheck(1)">
-              <span class="label-text"><span class="step-badge">1</span>สวม PPE ครบถ้วน <span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">1</span>Breaker OFF (Open) <span class="text-red-500">*</span></span>
             </label>
           </div>
           <div class="checklist-item disabled" data-lv-step="2">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_lv_rackout" disabled onchange="onLvStepCheck(2)">
-              <span class="label-text"><span class="step-badge">2</span>Breaker OFF (Open) <span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">2</span>Rack Out Breaker ไป Disconnected <span class="text-red-500">*</span></span>
             </label>
           </div>
           <div class="checklist-item disabled" data-lv-step="3">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_lv_ppe" disabled onchange="onLvStepCheck(3)">
-              <span class="label-text"><span class="step-badge">3</span>Rack Out Breaker ไป Disconnected<span class="text-red-500">*</span></span>
+              <span class="label-text"><span class="step-badge">3</span>สวม PPE ครบถ้วน <span class="text-red-500">*</span></span>
             </label>
           </div>
         </div>
@@ -851,15 +967,210 @@
           </p>
         </div>
 
-        <!-- Submit -->
-        <button type="button" id="btnSubmit" onclick="submitInspection()" disabled class="w-full py-3 sm:py-3.5 bg-slate-200 text-slate-500 font-bold rounded-xl cursor-not-allowed transition mt-2 sm:mt-3 text-sm sm:text-base">
+        <button type="button" id="btnSubmit" onclick="submitInspection('OPERATOR')" disabled class="w-full py-3 sm:py-3.5 bg-slate-200 text-slate-500 font-bold rounded-xl cursor-not-allowed transition mt-2 sm:mt-3 text-sm sm:text-base">
           <i class="fa-regular fa-circle-check mr-2"></i> กรุณากรอกข้อมูลและติ๊ก Checklist ให้ครบถ้วน
         </button>
       </form>
     </section>
 
-    <!-- ===== TAB 3: จัดการ EMAIL ===== -->
+    <!-- ===== TAB 3: MAINTENANCE (RECHECK) ===== -->
     <section id="tab3" class="hidden space-y-4 sm:space-y-5">
+      
+      <!-- Maintenance Header -->
+      <div class="maintenance-header rounded-2xl p-3 sm:p-4">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="role-badge maintenance">
+            <i class="fa-solid fa-screwdriver-wrench"></i> MAINTENANCE
+          </span>
+          <span class="text-xs sm:text-sm text-amber-800 font-medium">แบบฟอร์ม Recheck ก่อนเข้าปฏิบัติงานจริง</span>
+        </div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              KKS Code
+              <span id="typeBadgeMT" class="type-badge mv hidden">MV</span>
+            </label>
+            <input type="text" id="kksCodeMT" class="w-full mt-1 p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-amber-700 text-sm sm:text-base" readonly>
+          </div>
+          <div>
+            <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">รายละเอียด</label>
+            <input type="text" id="descriptionMT" class="w-full mt-1 p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-sm sm:text-base" readonly placeholder="กำลังดึงข้อมูล...">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-3">
+          <div>
+            <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Local</label>
+            <input type="text" id="localFieldMT" class="w-full mt-1 p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-xs sm:text-sm" readonly>
+          </div>
+          <div>
+            <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Panel</label>
+            <input type="text" id="panelFieldMT" class="w-full mt-1 p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-xs sm:text-sm" readonly>
+          </div>
+          <div>
+            <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Rack</label>
+            <input type="text" id="rackFieldMT" class="w-full mt-1 p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-xs sm:text-sm" readonly>
+          </div>
+        </div>
+        <div class="mt-3 sm:mt-4">
+          <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            รหัส/ชื่อ ผู้ตรวจสอบ (Maintenance) <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="maintenanceId" placeholder="กรอกรหัสพนักงานหรือชื่อ" oninput="validateMaintenanceForm()" class="w-full mt-1 p-2 sm:p-2.5 border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition bg-white text-sm sm:text-base">
+        </div>
+      </div>
+
+      <!-- GPS Status -->
+      <div id="gpsBoxMT" class="gps-box loading">
+        <i class="fa-solid fa-location-crosshairs text-lg"></i>
+        <div class="flex-1 min-w-0">
+          <p id="gpsTextMT" class="font-semibold">กำลังดึงพิกัด GPS...</p>
+          <p id="gpsSubMT" class="text-[10px] opacity-75 truncate"></p>
+        </div>
+        <button onclick="requestGPSMT()" id="btnGpsMT" class="text-xs px-2 py-1 rounded-lg bg-white/50 hover:bg-white/80 transition" title="รีเฟรช GPS">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+      </div>
+
+      <!-- Progress -->
+      <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-5 border border-slate-200">
+        <div class="flex items-center justify-between text-xs sm:text-sm">
+          <span class="font-medium text-slate-600">ความคืบหน้า Recheck</span>
+          <span id="progressTextMT" class="font-bold text-amber-600">0/8</span>
+        </div>
+        <div class="progress-bar mt-2">
+          <div id="progressFillMT" class="fill maintenance"></div>
+        </div>
+      </div>
+
+      <!-- Maintenance Checklist -->
+      <form id="maintenanceForm" class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-amber-200 space-y-2 sm:space-y-3">
+        <h3 class="font-bold text-amber-800 text-base sm:text-lg flex items-center gap-2 pb-2 sm:pb-3 border-b border-amber-100">
+          <i class="fa-solid fa-clipboard-check text-amber-600"></i>
+          รายการ Recheck ความปลอดภัย
+        </h3>
+
+        <div id="maintenanceChecklist">
+          <!-- MT 1 -->
+          <div class="checklist-item maintenance-item" data-mt-step="1">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-pointer">
+              <input type="checkbox" id="mt_visual" onchange="onMtStepCheck(1)">
+              <span class="label-text"><span class="step-badge">1</span>ตรวจสอบสภาพตู้ (Visual Check) <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <!-- MT 2 -->
+          <div class="checklist-item maintenance-item disabled" data-mt-step="2">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_ground" disabled onchange="onMtStepCheck(2)">
+              <span class="label-text"><span class="step-badge">2</span>ตรวจสอบสายดิน (Grounding) <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <!-- MT 3 -->
+          <div class="checklist-item maintenance-item disabled" data-mt-step="3">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_loto" disabled onchange="onMtStepCheck(3)">
+              <span class="label-text"><span class="step-badge">3</span>ตรวจสอบ LOTO Lock <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <!-- MT 4 -->
+          <div class="checklist-item maintenance-item disabled" data-mt-step="4">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_breaker" disabled onchange="onMtStepCheck(4)">
+              <span class="label-text"><span class="step-badge">4</span>ตรวจสอบ Breaker Status <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <!-- MT 5 -->
+          <div class="checklist-item maintenance-item disabled" data-mt-step="5">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_voltage" disabled onchange="onMtStepCheck(5)">
+              <span class="label-text"><span class="step-badge">5</span>ตรวจสอบแรงดันตกค้าง (Voltage) <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <!-- MT 6 -->
+          <div class="checklist-item maintenance-item disabled" data-mt-step="6">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_ppe" disabled onchange="onMtStepCheck(6)">
+              <span class="label-text"><span class="step-badge">6</span>ตรวจสอบ PPE + เครื่องมือ <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <!-- MT 7 -->
+          <div class="checklist-item maintenance-item disabled" data-mt-step="7">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_env" disabled onchange="onMtStepCheck(7)">
+              <span class="label-text"><span class="step-badge">7</span>ตรวจสอบสภาพแวดล้อม (5S) <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <!-- MT 8 -->
+          <div class="checklist-item maintenance-item disabled" data-mt-step="8">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_approve" disabled onchange="onMtStepCheck(8)">
+              <span class="label-text"><span class="step-badge">8</span>อนุมัติให้ปฏิบัติงาน (Approve) <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Camera -->
+        <div class="pt-3 sm:pt-4 mt-2 border-t border-amber-100">
+          <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            ถ่ายภาพ Recheck <span class="text-red-500">*</span>
+          </label>
+
+          <div class="camera-frame">
+            <video id="cameraVideoMT" autoplay playsinline class="hidden w-full h-full object-cover"></video>
+            <img id="imagePreviewMT" class="hidden w-full h-full object-cover">
+            <div id="cameraPlaceholderMT" class="placeholder">
+              <i class="fa-solid fa-camera"></i>
+              <p class="text-xs sm:text-sm font-medium">กด "เปิดกล้อง" เพื่อถ่ายภาพ</p>
+              <p class="text-[10px] sm:text-xs text-slate-500 mt-1">ระบบจะขออนุญาตใช้งานกล้อง</p>
+            </div>
+            <div id="cameraGuideMT" class="camera-guide hidden" style="border-color: rgba(245, 158, 11, 0.6);">
+              <span>📸 วางตำแหน่งที่ตรวจสอบในกรอบ</span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button type="button" id="btnStartCameraMT" onclick="startCameraMT()" class="btn-warning flex-1 sm:flex-none">
+              <i class="fa-solid fa-video"></i> เปิดกล้อง
+            </button>
+            <button type="button" id="btnCaptureMT" onclick="capturePhotoMT()" disabled class="btn-secondary flex-1 sm:flex-none opacity-50 cursor-not-allowed">
+              <i class="fa-solid fa-camera"></i> ถ่ายภาพ
+            </button>
+            <button type="button" id="btnRetakeMT" onclick="retakePhotoMT()" class="hidden btn-secondary flex-1 sm:flex-none">
+              <i class="fa-solid fa-rotate-left"></i> ถ่ายใหม่
+            </button>
+          </div>
+          
+          <canvas id="cameraCanvasMT" class="hidden"></canvas>
+          <p id="photoStatusMT" class="text-xs text-slate-400 mt-2 hidden">
+            <i class="fa-regular fa-circle-check text-amber-500 mr-1"></i> ถ่ายภาพเรียบร้อย
+          </p>
+        </div>
+
+        <!-- Note -->
+        <div class="pt-3 border-t border-amber-100">
+          <label class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            หมายเหตุ / ข้อเสนอแนะ
+          </label>
+          <textarea id="maintenanceNote" placeholder="ระบุหมายเหตุ (ถ้ามี)" rows="3" class="w-full p-2 sm:p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition bg-white text-sm sm:text-base"></textarea>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button type="button" id="btnApprove" onclick="submitMaintenance('APPROVE')" disabled class="w-full py-3 sm:py-3.5 bg-slate-200 text-slate-500 font-bold rounded-xl cursor-not-allowed transition text-sm sm:text-base">
+            <i class="fa-solid fa-circle-check mr-2"></i> อนุมัติให้ปฏิบัติงาน
+          </button>
+          <button type="button" id="btnReject" onclick="submitMaintenance('REJECT')" disabled class="w-full py-3 sm:py-3.5 bg-slate-200 text-slate-500 font-bold rounded-xl cursor-not-allowed transition text-sm sm:text-base">
+            <i class="fa-solid fa-circle-xmark mr-2"></i> ปฏิเสธ ส่งกลับ
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===== TAB 4: จัดการ EMAIL ===== -->
+    <section id="tab4" class="hidden space-y-4 sm:space-y-5">
       <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200">
         <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2 mb-3 sm:mb-4">
           <i class="fa-solid fa-users-gear text-blue-600"></i> 
@@ -950,7 +1261,7 @@
           
           <p class="text-[10px] sm:text-xs text-slate-400">
             <i class="fa-solid fa-code-branch mr-1"></i>
-            Version 3.1 · MV + LV + GPS + Skip
+            Version 3.2 · Operator + Maintenance
           </p>
           
         </div>
@@ -967,9 +1278,6 @@
       if (yearEl) yearEl.textContent = new Date().getFullYear();
     });
     
-    // ==========================================
-    // GUIDE SUB-TAB (MV / LV)
-    // ==========================================
     function switchGuideType(type) {
       const btnMV = document.getElementById('btnGuideMV');
       const btnLV = document.getElementById('btnGuideLV');
