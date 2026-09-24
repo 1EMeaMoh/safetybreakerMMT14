@@ -9,7 +9,6 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   
   <style>
-    /* ===== RESET & BASE ===== */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 16px; -webkit-text-size-adjust: 100%; }
     body {
@@ -23,12 +22,10 @@
       flex-direction: column;
     }
     
-    /* ===== SCROLLBAR ===== */
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; }
     
-    /* ===== TAB ===== */
     .tab-btn {
       position: relative;
       transition: all 0.3s ease;
@@ -57,13 +54,8 @@
       border-bottom-color: #2563eb;
       font-weight: 600;
     }
-    .tab-btn.active.maintenance-tab {
-      color: #b45309;
-      border-bottom-color: #f59e0b;
-    }
     .tab-btn i { margin-right: 4px; font-size: 0.85em; }
     
-    /* ===== GUIDE SUB-TAB (MV / LV) ===== */
     .guide-btn {
       flex: 1;
       padding: 10px 16px;
@@ -99,7 +91,6 @@
       box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);
     }
     
-    /* ===== CARD ===== */
     .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     @media (hover: hover) {
       .card-hover:hover {
@@ -108,7 +99,6 @@
       }
     }
     
-    /* ===== TOAST ===== */
     .toast {
       position: fixed;
       bottom: 20px;
@@ -136,7 +126,6 @@
     .toast.warning { background: #f59e0b; }
     .toast.info { background: #3b82f6; }
     
-    /* ===== CHECKLIST ===== */
     .checklist-item {
       transition: all 0.2s ease;
       border: 1px solid #e2e8f0;
@@ -189,37 +178,6 @@
       .checklist-item .label-text { font-size: 0.875rem; }
     }
     
-    /* ===== SKIPPED STATE ===== */
-    .checklist-item.skipped {
-      border-color: #fcd34d;
-      background: #fffbeb;
-      opacity: 0.9;
-    }
-    .checklist-item.skipped .step-badge {
-      background: #f59e0b;
-      color: white;
-    }
-    
-    .optional-badge {
-      display: inline-block;
-      background: #fef3c7;
-      color: #b45309;
-      font-size: 0.6rem;
-      font-weight: 700;
-      padding: 1px 6px;
-      border-radius: 6px;
-      margin-left: 4px;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-    }
-    
-    /* ===== MAINTENANCE THEME ===== */
-    .maintenance-item .step-badge { background: #fef3c7; color: #b45309; }
-    .maintenance-item.done { border-color: #fcd34d; background: #fffbeb; }
-    .maintenance-item.done .step-badge { background: #f59e0b; color: white; }
-    .maintenance-item.done input[type="checkbox"] { accent-color: #f59e0b; }
-    
-    /* ===== PROGRESS BAR ===== */
     .progress-bar { height: 4px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
     .progress-bar .fill {
       height: 100%;
@@ -232,7 +190,6 @@
       background: linear-gradient(90deg, #f59e0b, #fbbf24);
     }
     
-    /* ===== CAMERA ===== */
     .camera-frame {
       position: relative;
       width: 100%;
@@ -286,7 +243,6 @@
       .camera-guide span { padding: 4px 16px; font-size: 12px; }
     }
     
-    /* ===== BUTTONS ===== */
     .btn-primary {
       background: #2563eb;
       color: white;
@@ -396,19 +352,14 @@
     }
     .btn-danger:active { transform: scale(0.97); }
     
-    /* ===== INPUTS ===== */
     input:focus,
     select:focus,
     textarea:focus {
       outline: none;
       border-color: #3b82f6;
     }
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
+    textarea { resize: vertical; min-height: 60px; }
     
-    /* ===== RESPONSIVE HELPERS ===== */
     .container-main {
       max-width: 100%;
       padding: 12px 12px 20px;
@@ -423,13 +374,6 @@
       .container-main { max-width: 1024px; padding: 20px 24px 40px; }
     }
     
-    /* ===== MISC ===== */
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    
-    /* ===== TYPE BADGE ===== */
     .type-badge {
       display: inline-flex;
       align-items: center;
@@ -444,7 +388,6 @@
     .type-badge.mv { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
     .type-badge.lv { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
     
-    /* ===== ROLE BADGE ===== */
     .role-badge {
       display: inline-flex;
       align-items: center;
@@ -459,7 +402,6 @@
     .role-badge.operator { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
     .role-badge.maintenance { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
     
-    /* ===== GPS BOX ===== */
     .gps-box {
       display: flex;
       align-items: center;
@@ -473,7 +415,6 @@
     .gps-box.error { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
     .gps-box.loading { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
     
-    /* ===== FOOTER ===== */
     .footer-gradient {
       background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 50%, #f0fdf4 100%);
     }
@@ -486,110 +427,30 @@
       animation: footer-fade-in 0.6s ease-out;
     }
     
-    /* ===== SKIP WRAPPER ===== */
-    .skip-wrapper {
-      margin-top: 8px;
-      padding-left: 32px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 8px 6px 32px;
-      background: #fffbeb;
-      border-radius: 8px;
-      border: 1px dashed #fcd34d;
-    }
-    @media (min-width: 640px) {
-      .skip-wrapper { padding-left: 40px; }
-    }
-    .skip-wrapper input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: #f59e0b;
-    }
-    .skip-wrapper label {
-      font-size: 0.7rem;
-      color: #92400e;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    @media (min-width: 640px) {
-      .skip-wrapper label { font-size: 0.8rem; }
-    }
-    
-    /* ===== LOADING OVERLAY ===== */
-    #loadingOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 9998;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-    #loadingOverlay.show {
-      opacity: 1;
-      pointer-events: all;
-    }
-    .loading-content {
-      background: white;
-      border-radius: 16px;
-      padding: 24px 32px;
-      text-align: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-    .loading-spinner {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 12px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #2563eb;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .loading-text {
-      font-size: 0.85rem;
-      color: #475569;
-      font-weight: 500;
-    }
-    
-    /* ===== MAINTENANCE HEADER ===== */
     .maintenance-header {
       background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
       border: 1px solid #fcd34d;
     }
-    .maintenance-header h3 {
-      color: #92400e;
-    }
-    .maintenance-header i {
-      color: #d97706;
-    }
+    .maintenance-header h3 { color: #92400e; }
+    .maintenance-header i { color: #d97706; }
     
-    /* ===== TAB SCROLL ===== */
     .tab-nav-scroll {
       overflow-x: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
     .tab-nav-scroll::-webkit-scrollbar { display: none; }
+    
+    .maintenance-item .step-badge { background: #fef3c7; color: #b45309; }
+    .maintenance-item.done { border-color: #fcd34d; background: #fffbeb; }
+    .maintenance-item.done .step-badge { background: #f59e0b; color: white; }
+    .maintenance-item.done input[type="checkbox"] { accent-color: #f59e0b; }
   </style>
 </head>
 <body>
 
-  <!-- ===== TOAST CONTAINER ===== -->
   <div id="toastContainer"></div>
 
-  <!-- ===== HEADER ===== -->
   <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
     <div class="max-w-4xl mx-auto px-3 sm:px-4">
       <div class="py-3 sm:py-4 flex items-center justify-between gap-2">
@@ -605,7 +466,6 @@
         </span>
       </div>
       
-      <!-- Tabs (4 tabs) -->
       <nav class="flex gap-0.5 sm:gap-1 text-xs sm:text-sm tab-nav-scroll">
         <button onclick="switchTab(1)" id="btnTab1" class="tab-btn">
           <i class="fa-solid fa-circle-play"></i> <span class="hidden sm:inline">คู่มือ</span><span class="sm:hidden">Guide</span>
@@ -623,13 +483,11 @@
     </div>
   </header>
 
-  <!-- ===== MAIN CONTENT ===== -->
   <main class="container-main">
 
-    <!-- ===== TAB 1: คู่มือ & VDO ===== -->
+    <!-- TAB 1: คู่มือ -->
     <section id="tab1" class="hidden space-y-4 sm:space-y-5">
       
-      <!-- Sub-Tab: เลือก MV / LV -->
       <div class="bg-white rounded-2xl shadow-sm p-3 sm:p-4 border border-slate-200">
         <div class="flex gap-2">
           <button onclick="switchGuideType('MV')" id="btnGuideMV" class="guide-btn active">
@@ -641,9 +499,7 @@
         </div>
       </div>
 
-      <!-- ===== MV Guide ===== -->
       <div id="guideMV" class="space-y-4 sm:space-y-5">
-        
         <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200 card-hover">
           <h2 class="text-base sm:text-lg font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
             <i class="fa-solid fa-video text-blue-600 text-lg sm:text-xl"></i> 
@@ -703,9 +559,7 @@
         </div>
       </div>
 
-      <!-- ===== LV Guide ===== -->
       <div id="guideLV" class="space-y-4 sm:space-y-5 hidden">
-        
         <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200 card-hover">
           <h2 class="text-base sm:text-lg font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
             <i class="fa-solid fa-video text-amber-600 text-lg sm:text-xl"></i> 
@@ -763,10 +617,9 @@
 
     </section>
 
-    <!-- ===== TAB 2: SAFETY CHECKLIST (OPERATOR) ===== -->
+    <!-- TAB 2: OPERATOR -->
     <section id="tab2" class="space-y-4 sm:space-y-5">
       
-      <!-- Operator Header -->
       <div class="bg-blue-50 rounded-2xl border border-blue-200 p-3 sm:p-4">
         <div class="flex items-center gap-2">
           <span class="role-badge operator">
@@ -776,7 +629,6 @@
         </div>
       </div>
 
-      <!-- Info Card -->
       <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
@@ -813,7 +665,6 @@
         </div>
       </div>
 
-      <!-- GPS Status -->
       <div id="gpsBox" class="gps-box loading">
         <i class="fa-solid fa-location-crosshairs text-lg"></i>
         <div class="flex-1 min-w-0">
@@ -825,7 +676,6 @@
         </button>
       </div>
 
-      <!-- Progress -->
       <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-5 border border-slate-200">
         <div class="flex items-center justify-between text-xs sm:text-sm">
           <span class="font-medium text-slate-600">ความคืบหน้า</span>
@@ -836,14 +686,13 @@
         </div>
       </div>
 
-      <!-- Checklist -->
       <form id="inspectionForm" class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200 space-y-2 sm:space-y-3">
         <h3 class="font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2 pb-2 sm:pb-3 border-b border-slate-100">
           <i class="fa-solid fa-shield-check text-blue-600"></i>
           รายการตรวจสอบความปลอดภัย
         </h3>
 
-        <!-- ===== MV Checklist (8 items) ===== -->
+        <!-- MV Checklist -->
         <div id="checklistMV">
           <div class="checklist-item" data-step="1">
             <label class="flex items-start gap-2 sm:gap-3 cursor-pointer">
@@ -881,25 +730,12 @@
               <span class="label-text"><span class="step-badge">6</span>RackOut Breaker ไป Disconnected <span class="text-red-500">*</span></span>
             </label>
           </div>
-          
           <div class="checklist-item disabled" data-step="7">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_ground" disabled onchange="onStepCheck(7)">
-              <span class="label-text">
-                <span class="step-badge">7</span>
-                สับ Ground Switch Close (ถ้ามี)
-                <span class="optional-badge">ไม่บังคับ</span>
-              </span>
+              <span class="label-text"><span class="step-badge">7</span>สับ Ground Switch Close (ถ้ามี) <span class="text-red-500">*</span></span>
             </label>
-            <div id="skipGroundWrapper" class="skip-wrapper hidden">
-              <input type="checkbox" id="chk_ground_skip" onchange="onGroundSkipChange()">
-              <label for="chk_ground_skip">
-                <i class="fa-solid fa-forward-step"></i>
-                ไม่มี Ground Switch — ข้ามข้อนี้
-              </label>
-            </div>
           </div>
-          
           <div class="checklist-item disabled" data-step="8">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="chk_loto" disabled onchange="onStepCheck(8)">
@@ -908,7 +744,7 @@
           </div>
         </div>
 
-        <!-- ===== LV Checklist (3 items) ===== -->
+        <!-- LV Checklist -->
         <div id="checklistLV" class="hidden">
           <div class="checklist-item" data-lv-step="1">
             <label class="flex items-start gap-2 sm:gap-3 cursor-pointer">
@@ -973,10 +809,9 @@
       </form>
     </section>
 
-    <!-- ===== TAB 3: MAINTENANCE (RECHECK) ===== -->
+    <!-- TAB 3: MAINTENANCE -->
     <section id="tab3" class="hidden space-y-4 sm:space-y-5">
       
-      <!-- Maintenance Header -->
       <div class="maintenance-header rounded-2xl p-3 sm:p-4">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="role-badge maintenance">
@@ -986,7 +821,6 @@
         </div>
       </div>
 
-      <!-- Info Card -->
       <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
@@ -1023,7 +857,6 @@
         </div>
       </div>
 
-      <!-- GPS Status -->
       <div id="gpsBoxMT" class="gps-box loading">
         <i class="fa-solid fa-location-crosshairs text-lg"></i>
         <div class="flex-1 min-w-0">
@@ -1035,7 +868,6 @@
         </button>
       </div>
 
-      <!-- Progress -->
       <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-5 border border-slate-200">
         <div class="flex items-center justify-between text-xs sm:text-sm">
           <span class="font-medium text-slate-600">ความคืบหน้า Recheck</span>
@@ -1046,68 +878,82 @@
         </div>
       </div>
 
-      <!-- Maintenance Checklist -->
       <form id="maintenanceForm" class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-amber-200 space-y-2 sm:space-y-3">
         <h3 class="font-bold text-amber-800 text-base sm:text-lg flex items-center gap-2 pb-2 sm:pb-3 border-b border-amber-100">
           <i class="fa-solid fa-clipboard-check text-amber-600"></i>
           รายการ Recheck ความปลอดภัย
         </h3>
 
-        <div id="maintenanceChecklist">
-          <!-- MT 1 -->
+        <!-- ===== MT Checklist MV (8 items) ===== -->
+        <div id="checklistMT_MV">
           <div class="checklist-item maintenance-item" data-mt-step="1">
             <label class="flex items-start gap-2 sm:gap-3 cursor-pointer">
               <input type="checkbox" id="mt_visual" onchange="onMtStepCheck(1)">
               <span class="label-text"><span class="step-badge">1</span>ตรวจสอบสภาพตู้ (Visual Check) <span class="text-red-500">*</span></span>
             </label>
           </div>
-          <!-- MT 2 -->
           <div class="checklist-item maintenance-item disabled" data-mt-step="2">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="mt_ground" disabled onchange="onMtStepCheck(2)">
               <span class="label-text"><span class="step-badge">2</span>ตรวจสอบสายดิน (Grounding) <span class="text-red-500">*</span></span>
             </label>
           </div>
-          <!-- MT 3 -->
           <div class="checklist-item maintenance-item disabled" data-mt-step="3">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="mt_loto" disabled onchange="onMtStepCheck(3)">
               <span class="label-text"><span class="step-badge">3</span>ตรวจสอบ LOTO Lock <span class="text-red-500">*</span></span>
             </label>
           </div>
-          <!-- MT 4 -->
           <div class="checklist-item maintenance-item disabled" data-mt-step="4">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="mt_breaker" disabled onchange="onMtStepCheck(4)">
               <span class="label-text"><span class="step-badge">4</span>ตรวจสอบ Breaker Status <span class="text-red-500">*</span></span>
             </label>
           </div>
-          <!-- MT 5 -->
           <div class="checklist-item maintenance-item disabled" data-mt-step="5">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="mt_voltage" disabled onchange="onMtStepCheck(5)">
               <span class="label-text"><span class="step-badge">5</span>ตรวจสอบแรงดันตกค้าง (Voltage) <span class="text-red-500">*</span></span>
             </label>
           </div>
-          <!-- MT 6 -->
           <div class="checklist-item maintenance-item disabled" data-mt-step="6">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="mt_ppe" disabled onchange="onMtStepCheck(6)">
               <span class="label-text"><span class="step-badge">6</span>ตรวจสอบ PPE + เครื่องมือ <span class="text-red-500">*</span></span>
             </label>
           </div>
-          <!-- MT 7 -->
           <div class="checklist-item maintenance-item disabled" data-mt-step="7">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="mt_env" disabled onchange="onMtStepCheck(7)">
               <span class="label-text"><span class="step-badge">7</span>ตรวจสอบสภาพแวดล้อม (5S) <span class="text-red-500">*</span></span>
             </label>
           </div>
-          <!-- MT 8 -->
           <div class="checklist-item maintenance-item disabled" data-mt-step="8">
             <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
               <input type="checkbox" id="mt_approve" disabled onchange="onMtStepCheck(8)">
               <span class="label-text"><span class="step-badge">8</span>อนุมัติให้ปฏิบัติงาน (Approve) <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ===== MT Checklist LV (3 items) ===== -->
+        <div id="checklistMT_LV" class="hidden">
+          <div class="checklist-item maintenance-item" data-mt-lv-step="1">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-pointer">
+              <input type="checkbox" id="mt_lv_breaker" onchange="onMtLvStepCheck(1)">
+              <span class="label-text"><span class="step-badge">1</span>Breaker OFF (Open) <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <div class="checklist-item maintenance-item disabled" data-mt-lv-step="2">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_lv_rackout" disabled onchange="onMtLvStepCheck(2)">
+              <span class="label-text"><span class="step-badge">2</span>Rack Out Breaker ไป Disconnected <span class="text-red-500">*</span></span>
+            </label>
+          </div>
+          <div class="checklist-item maintenance-item disabled" data-mt-lv-step="3">
+            <label class="flex items-start gap-2 sm:gap-3 cursor-not-allowed">
+              <input type="checkbox" id="mt_lv_ppe" disabled onchange="onMtLvStepCheck(3)">
+              <span class="label-text"><span class="step-badge">3</span>สวม PPE ครบถ้วน <span class="text-red-500">*</span></span>
             </label>
           </div>
         </div>
@@ -1169,7 +1015,7 @@
       </form>
     </section>
 
-    <!-- ===== TAB 4: จัดการ EMAIL ===== -->
+    <!-- TAB 4: EMAIL -->
     <section id="tab4" class="hidden space-y-4 sm:space-y-5">
       <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-200">
         <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2 mb-3 sm:mb-4">
@@ -1223,7 +1069,6 @@
 
   </main>
 
-  <!-- ===== FOOTER ===== -->
   <footer class="mt-6 pb-6 sm:pb-8 footer-animate">
     <div class="max-w-4xl mx-auto px-3 sm:px-4">
       <div class="footer-gradient rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
@@ -1261,7 +1106,7 @@
           
           <p class="text-[10px] sm:text-xs text-slate-400">
             <i class="fa-solid fa-code-branch mr-1"></i>
-            Version 3.2 · Operator + Maintenance
+            Version 3.3 · MT LV + Force Ground
           </p>
           
         </div>
@@ -1269,7 +1114,6 @@
     </div>
   </footer>
 
-  <!-- ===== JAVASCRIPT ===== -->
   <script src="script.js"></script>
   
   <script>
