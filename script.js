@@ -6,6 +6,7 @@ const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3emiy06lay_rP
 // ==========================================
 // STATE
 // ==========================================
+// Operator
 let base64Image = "";
 let imageMimeType = "";
 let imageName = "";
@@ -13,13 +14,20 @@ let mediaStream = null;
 let completedSteps = new Set();
 let completedLvSteps = new Set();
 
+// Maintenance
+let base64ImageMT = "";
+let imageMimeTypeMT = "";
+let imageNameMT = "";
+let mediaStreamMT = null;
+let completedMtSteps = new Set();
+
 // KKS Info
-let kksType = "MV"; // "MV" | "LV"
+let kksType = "MV";
 let kksData = {};
 
 // GPS
 let gpsCoords = null;
-let gpsWatchId = null;
+let gpsCoordsMT = null;
 
 // ==========================================
 // 1. INIT
@@ -28,13 +36,19 @@ document.addEventListener("DOMContentLoaded", function () {
   const urlParams = new URLSearchParams(window.location.search);
   const tab = parseInt(urlParams.get('tab')) || 2;
   const kks = urlParams.get('kks') || "MMP-T14BBA01GH001";
+  
+  // Operator
   document.getElementById("kksCode").value = kks;
+  
+  // Maintenance
+  document.getElementById("kksCodeMT").value = kks;
 
   fetchKksData(kks);
   loadEmailList();
   updateClock();
   setInterval(updateClock, 1000);
   requestGPS();
+  requestGPSMT();
   switchTab(tab);
 });
 
@@ -59,34 +73,52 @@ function fetchKksData(kks) {
         kksType = (data.type || "MV").toUpperCase();
         kksData = data;
 
+        // Operator fields
         document.getElementById("description").value = data.description || "-";
         document.getElementById("localField").value = data.local || "-";
         document.getElementById("panelField").value = data.panel || "-";
         document.getElementById("rackField").value = data.rack || "-";
 
+        // Maintenance fields
+        document.getElementById("descriptionMT").value = data.description || "-";
+        document.getElementById("localFieldMT").value = data.local || "-";
+        document.getElementById("panelFieldMT").value = data.panel || "-";
+        document.getElementById("rackFieldMT").value = data.rack || "-";
+
         applyKksType(kksType);
       } else {
         kksType = "MV";
         document.getElementById("description").value = "ไม่พบข้อมูลในระบบ";
+        document.getElementById("descriptionMT").value = "ไม่พบข้อมูลในระบบ";
         applyKksType("MV");
       }
     })
     .catch(() => {
       kksType = "MV";
       document.getElementById("description").value = "ไม่พบข้อมูลในระบบ";
+      document.getElementById("descriptionMT").value = "ไม่พบข้อมูลในระบบ";
       applyKksType("MV");
     });
 }
 
 function applyKksType(type) {
+  // Operator badge
   const badge = document.getElementById("typeBadge");
   const checklistMV = document.getElementById("checklistMV");
   const checklistLV = document.getElementById("checklistLV");
+  
+  // Maintenance badge
+  const badgeMT = document.getElementById("typeBadgeMT");
 
   if (type === "LV") {
     badge.textContent = "LV";
     badge.className = "type-badge lv";
     badge.classList.remove("hidden");
+    
+    badgeMT.textContent = "LV";
+    badgeMT.className = "type-badge lv";
+    badgeMT.classList.remove("hidden");
+    
     checklistMV.classList.add("hidden");
     checklistLV.classList.remove("hidden");
     completedSteps.clear();
@@ -95,25 +127,34 @@ function applyKksType(type) {
     badge.textContent = "MV";
     badge.className = "type-badge mv";
     badge.classList.remove("hidden");
+    
+    badgeMT.textContent = "MV";
+    badgeMT.className = "type-badge mv";
+    badgeMT.classList.remove("hidden");
+    
     checklistMV.classList.remove("hidden");
     checklistLV.classList.add("hidden");
     completedLvSteps.clear();
     updateProgress();
   }
   validateChecklistForm();
+  validateMaintenanceForm();
 }
 
 // ==========================================
-// 3. TAB SWITCHING
+// 3. TAB SWITCHING (4 Tabs)
 // ==========================================
 function switchTab(tabIndex) {
   stopCameraStream();
-  [1, 2, 3].forEach(i => {
+  stopCameraStreamMT();
+  
+  [1, 2, 3, 4].forEach(i => {
     const tab = document.getElementById(`tab${i}`);
     const btn = document.getElementById(`btnTab${i}`);
     if (tab) tab.classList.add("hidden");
     if (btn) btn.classList.remove("active");
   });
+  
   const activeTab = document.getElementById(`tab${tabIndex}`);
   const activeBtn = document.getElementById(`btnTab${tabIndex}`);
   if (activeTab) activeTab.classList.remove("hidden");
@@ -121,7 +162,7 @@ function switchTab(tabIndex) {
 }
 
 // ==========================================
-// 4. GPS
+// 4. GPS (Operator + Maintenance)
 // ==========================================
 function requestGPS() {
   const box = document.getElementById("gpsBox");
@@ -135,7 +176,6 @@ function requestGPS() {
   if (!navigator.geolocation) {
     box.className = "gps-box error";
     text.textContent = "อุปกรณ์นี้ไม่รองรับ GPS";
-    sub.textContent = "สามารถบันทึกได้โดยไม่มีพิกัด";
     gpsCoords = null;
     return;
   }
@@ -161,8 +201,45 @@ function requestGPS() {
   );
 }
 
+function requestGPSMT() {
+  const box = document.getElementById("gpsBoxMT");
+  const text = document.getElementById("gpsTextMT");
+  const sub = document.getElementById("gpsSubMT");
+
+  box.className = "gps-box loading";
+  text.textContent = "กำลังดึงพิกัด GPS...";
+  sub.textContent = "";
+
+  if (!navigator.geolocation) {
+    box.className = "gps-box error";
+    text.textContent = "อุปกรณ์นี้ไม่รองรับ GPS";
+    gpsCoordsMT = null;
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      gpsCoordsMT = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy
+      };
+      box.className = "gps-box";
+      text.textContent = `📍 ${gpsCoordsMT.lat.toFixed(6)}, ${gpsCoordsMT.lng.toFixed(6)}`;
+      sub.textContent = `ความแม่นยำ ±${Math.round(gpsCoordsMT.accuracy)} ม.`;
+    },
+    (err) => {
+      box.className = "gps-box error";
+      text.textContent = "ไม่สามารถดึงพิกัดได้";
+      sub.textContent = err.message || "กรุณาอนุญาต Location";
+      gpsCoordsMT = null;
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+}
+
 // ==========================================
-// 5. CAMERA
+// 5. CAMERA — OPERATOR
 // ==========================================
 async function startCamera() {
   const video = document.getElementById("cameraVideo");
@@ -188,8 +265,7 @@ async function startCamera() {
     btnCapture.innerHTML = '<i class="fa-solid fa-camera"></i> ถ่ายภาพ';
     showToast("เปิดกล้องสำเร็จ", "success");
   } catch (err) {
-    showToast("ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตการใช้งานกล้อง", "error");
-    console.error("Camera Error:", err);
+    showToast("ไม่สามารถเข้าถึงกล้องได้", "error");
   }
 }
 
@@ -210,7 +286,7 @@ function capturePhoto() {
   const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
   base64Image = dataUrl.split(",")[1];
   imageMimeType = "image/jpeg";
-  imageName = `inspection_${Date.now()}.jpg`;
+  imageName = `operator_${Date.now()}.jpg`;
 
   preview.src = dataUrl;
   preview.classList.remove("hidden");
@@ -248,7 +324,92 @@ function stopCameraStream() {
 }
 
 // ==========================================
-// 6. CHECKLIST - MV (8 items) — with Skip Support
+// 6. CAMERA — MAINTENANCE
+// ==========================================
+async function startCameraMT() {
+  const video = document.getElementById("cameraVideoMT");
+  const guide = document.getElementById("cameraGuideMT");
+  const placeholder = document.getElementById("cameraPlaceholderMT");
+  const btnStart = document.getElementById("btnStartCameraMT");
+  const btnCapture = document.getElementById("btnCaptureMT");
+  const preview = document.getElementById("imagePreviewMT");
+
+  try {
+    mediaStreamMT = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    video.srcObject = mediaStreamMT;
+    video.classList.remove("hidden");
+    guide.classList.remove("hidden");
+    placeholder.classList.add("hidden");
+    preview.classList.add("hidden");
+    btnStart.classList.add("hidden");
+    btnCapture.disabled = false;
+    btnCapture.className = "btn-warning flex-1 sm:flex-none";
+    btnCapture.innerHTML = '<i class="fa-solid fa-camera"></i> ถ่ายภาพ';
+    showToast("เปิดกล้องสำเร็จ", "success");
+  } catch (err) {
+    showToast("ไม่สามารถเข้าถึงกล้องได้", "error");
+  }
+}
+
+function capturePhotoMT() {
+  const video = document.getElementById("cameraVideoMT");
+  const canvas = document.getElementById("cameraCanvasMT");
+  const preview = document.getElementById("imagePreviewMT");
+  const guide = document.getElementById("cameraGuideMT");
+  const btnCapture = document.getElementById("btnCaptureMT");
+  const btnRetake = document.getElementById("btnRetakeMT");
+  const photoStatus = document.getElementById("photoStatusMT");
+
+  const context = canvas.getContext("2d");
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+  base64ImageMT = dataUrl.split(",")[1];
+  imageMimeTypeMT = "image/jpeg";
+  imageNameMT = `maintenance_${Date.now()}.jpg`;
+
+  preview.src = dataUrl;
+  preview.classList.remove("hidden");
+  video.classList.add("hidden");
+  guide.classList.add("hidden");
+  stopCameraStreamMT();
+
+  btnCapture.classList.add("hidden");
+  btnRetake.classList.remove("hidden");
+  photoStatus.classList.remove("hidden");
+  photoStatus.innerHTML = '<i class="fa-regular fa-circle-check text-amber-500 mr-1"></i> ถ่ายภาพเรียบร้อย';
+
+  showToast("ถ่ายภาพสำเร็จ", "success");
+  validateMaintenanceForm();
+}
+
+function retakePhotoMT() {
+  base64ImageMT = "";
+  imageMimeTypeMT = "";
+  imageNameMT = "";
+  document.getElementById("btnRetakeMT").classList.add("hidden");
+  document.getElementById("btnCaptureMT").classList.remove("hidden");
+  document.getElementById("btnStartCameraMT").classList.remove("hidden");
+  document.getElementById("imagePreviewMT").classList.add("hidden");
+  document.getElementById("photoStatusMT").classList.add("hidden");
+  validateMaintenanceForm();
+  startCameraMT();
+}
+
+function stopCameraStreamMT() {
+  if (mediaStreamMT) {
+    mediaStreamMT.getTracks().forEach(track => track.stop());
+    mediaStreamMT = null;
+  }
+}
+
+// ==========================================
+// 7. CHECKLIST — OPERATOR (MV)
 // ==========================================
 const MV_CHECKBOX_LIST = [
   "chk_ptw", "chk_ppe", "chk_led", "chk_selector",
@@ -264,7 +425,6 @@ function onStepCheck(stepNumber) {
     item.classList.add('done');
     item.classList.remove('skipped');
     
-    // ถ้าติ๊กข้อ 7 → ซ่อน skip checkbox (เพราะเลือกแล้วว่ามี Ground Switch)
     if (stepNumber === 7) {
       const skipWrapper = document.getElementById('skipGroundWrapper');
       if (skipWrapper) {
@@ -274,7 +434,6 @@ function onStepCheck(stepNumber) {
       }
     }
     
-    // ปลดล็อกข้อถัดไป
     if (stepNumber < MV_CHECKBOX_LIST.length) {
       unlockStep(stepNumber + 1);
     }
@@ -282,13 +441,11 @@ function onStepCheck(stepNumber) {
     completedSteps.delete(stepNumber);
     item.classList.remove('done');
     
-    // ถ้ายกเลิกติ๊กข้อ 7 → แสดง skip checkbox
     if (stepNumber === 7) {
       const skipWrapper = document.getElementById('skipGroundWrapper');
       if (skipWrapper) skipWrapper.classList.remove('hidden');
     }
     
-    // ล็อกข้อถัดไปทั้งหมด
     lockFromStep(stepNumber + 1);
   }
 
@@ -296,33 +453,24 @@ function onStepCheck(stepNumber) {
   validateChecklistForm();
 }
 
-// ==========================================
-// 6.1 Ground Switch Skip Logic
-// ==========================================
 function onGroundSkipChange() {
   const skipChk = document.getElementById("chk_ground_skip");
   const groundChk = document.getElementById("chk_ground");
   const item7 = groundChk.closest('.checklist-item');
   
   if (skipChk.checked) {
-    // เลือกข้าม → mark as skipped, ปลดล็อกข้อ 8
     groundChk.checked = false;
     groundChk.disabled = true;
     item7.classList.remove('done');
     item7.classList.add('skipped');
-    
-    completedSteps.add(7); // นับเป็น complete (skip)
-    
+    completedSteps.add(7);
     unlockStep(8);
-    
     showToast("ข้ามข้อ 7 — Ground Switch", "info");
   } else {
-    // ยกเลิกข้าม → กลับมาให้ติ๊กข้อ 7 ได้
     groundChk.disabled = false;
     item7.classList.remove('skipped');
     completedSteps.delete(7);
     
-    // ถ้าข้อ 8 ติ๊กอยู่ ให้ uncheck และ lock
     const chk8 = document.getElementById("chk_loto");
     if (chk8 && chk8.checked) {
       chk8.checked = false;
@@ -336,7 +484,6 @@ function onGroundSkipChange() {
   validateChecklistForm();
 }
 
-// ปลดล็อกข้อที่กำหนด
 function unlockStep(stepNumber) {
   if (stepNumber > MV_CHECKBOX_LIST.length) return;
   const nextChk = document.getElementById(MV_CHECKBOX_LIST[stepNumber - 1]);
@@ -345,14 +492,12 @@ function unlockStep(stepNumber) {
   nextItem.classList.remove('disabled');
   nextItem.querySelector('label').classList.remove('cursor-not-allowed');
   
-  // ถ้าเป็นข้อ 7 → แสดง skip checkbox
   if (stepNumber === 7) {
     const skipWrapper = document.getElementById('skipGroundWrapper');
     if (skipWrapper) skipWrapper.classList.remove('hidden');
   }
 }
 
-// ล็อกจากข้อที่กำหนด
 function lockFromStep(stepNumber) {
   for (let i = stepNumber - 1; i < MV_CHECKBOX_LIST.length; i++) {
     const target = document.getElementById(MV_CHECKBOX_LIST[i]);
@@ -366,7 +511,6 @@ function lockFromStep(stepNumber) {
     completedSteps.delete(i + 1);
   }
   
-  // ซ่อน skip wrapper ถ้า lock กลับมาถึงข้อ 7 หรือต่ำกว่า
   if (stepNumber <= 7) {
     const skipWrapper = document.getElementById('skipGroundWrapper');
     if (skipWrapper) {
@@ -378,7 +522,7 @@ function lockFromStep(stepNumber) {
 }
 
 // ==========================================
-// 7. CHECKLIST - LV (3 items)
+// 8. CHECKLIST — OPERATOR (LV)
 // ==========================================
 const LV_CHECKBOX_LIST = ["chk_lv_breaker", "chk_lv_rackout", "chk_lv_ppe"];
 
@@ -415,7 +559,49 @@ function onLvStepCheck(stepNumber) {
 }
 
 // ==========================================
-// 8. PROGRESS
+// 9. CHECKLIST — MAINTENANCE (8 items)
+// ==========================================
+const MT_CHECKBOX_LIST = [
+  "mt_visual", "mt_ground", "mt_loto", "mt_breaker",
+  "mt_voltage", "mt_ppe", "mt_env", "mt_approve"
+];
+
+function onMtStepCheck(stepNumber) {
+  const currentChk = document.getElementById(MT_CHECKBOX_LIST[stepNumber - 1]);
+  const item = currentChk.closest('.checklist-item');
+
+  if (currentChk.checked) {
+    completedMtSteps.add(stepNumber);
+    item.classList.add('done');
+    
+    if (stepNumber < MT_CHECKBOX_LIST.length) {
+      const nextChk = document.getElementById(MT_CHECKBOX_LIST[stepNumber]);
+      const nextItem = nextChk.closest('.checklist-item');
+      nextChk.disabled = false;
+      nextItem.classList.remove('disabled');
+      nextItem.querySelector('label').classList.remove('cursor-not-allowed');
+    }
+  } else {
+    completedMtSteps.delete(stepNumber);
+    item.classList.remove('done');
+    
+    for (let i = stepNumber; i < MT_CHECKBOX_LIST.length; i++) {
+      const target = document.getElementById(MT_CHECKBOX_LIST[i]);
+      const targetItem = target.closest('.checklist-item');
+      target.checked = false;
+      target.disabled = true;
+      targetItem.classList.add('disabled');
+      targetItem.classList.remove('done');
+      targetItem.querySelector('label').classList.add('cursor-not-allowed');
+      completedMtSteps.delete(i + 1);
+    }
+  }
+  updateProgressMT();
+  validateMaintenanceForm();
+}
+
+// ==========================================
+// 10. PROGRESS
 // ==========================================
 function updateProgress() {
   const total = kksType === "LV" ? 3 : 8;
@@ -424,8 +610,15 @@ function updateProgress() {
   document.getElementById('progressFill').style.width = `${(count / total) * 100}%`;
 }
 
+function updateProgressMT() {
+  const total = 8;
+  const count = completedMtSteps.size;
+  document.getElementById('progressTextMT').textContent = `${count}/${total}`;
+  document.getElementById('progressFillMT').style.width = `${(count / total) * 100}%`;
+}
+
 // ==========================================
-// 9. VALIDATION
+// 11. VALIDATION
 // ==========================================
 function validateChecklistForm() {
   const operatorId = document.getElementById("operatorId").value.trim();
@@ -440,7 +633,6 @@ function validateChecklistForm() {
     allRequiredChecked = required.every(id => document.getElementById(id).checked);
     requiredCount = 3;
   } else {
-    // ⭐ MV: ข้อ 7 ไม่บังคับ → เช็ค 7 ข้อ (1-6, 8)
     const required = [
       "chk_ptw", "chk_ppe", "chk_led", "chk_selector",
       "chk_release", "chk_rackout", "chk_loto"
@@ -452,7 +644,7 @@ function validateChecklistForm() {
   if (operatorId && allRequiredChecked && hasPhoto) {
     btnSubmit.disabled = false;
     btnSubmit.className = "w-full py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm text-sm sm:text-base";
-    btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> ส่งรายงานการตรวจสอบ';
+    btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> ส่งรายงาน OPERATOR';
   } else {
     btnSubmit.disabled = true;
     btnSubmit.className = "w-full py-3 sm:py-3.5 bg-slate-200 text-slate-500 font-bold rounded-xl cursor-not-allowed transition text-sm sm:text-base";
@@ -464,10 +656,45 @@ function validateChecklistForm() {
   }
 }
 
+function validateMaintenanceForm() {
+  const maintenanceId = document.getElementById("maintenanceId").value.trim();
+  const hasPhoto = base64ImageMT !== "";
+  const btnApprove = document.getElementById("btnApprove");
+  const btnReject = document.getElementById("btnReject");
+
+  const required = MT_CHECKBOX_LIST;
+  const allChecked = required.every(id => document.getElementById(id).checked);
+  const requiredCount = 8;
+
+  if (maintenanceId && allChecked && hasPhoto) {
+    // Approve button
+    btnApprove.disabled = false;
+    btnApprove.className = "w-full py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm text-sm sm:text-base";
+    btnApprove.innerHTML = '<i class="fa-solid fa-circle-check mr-2"></i> อนุมัติให้ปฏิบัติงาน';
+    
+    // Reject button
+    btnReject.disabled = false;
+    btnReject.className = "w-full py-3 sm:py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition shadow-sm text-sm sm:text-base";
+    btnReject.innerHTML = '<i class="fa-solid fa-circle-xmark mr-2"></i> ปฏิเสธ ส่งกลับ';
+  } else {
+    btnApprove.disabled = true;
+    btnApprove.className = "w-full py-3 sm:py-3.5 bg-slate-200 text-slate-500 font-bold rounded-xl cursor-not-allowed transition text-sm sm:text-base";
+    let msgA = "กรุณา";
+    if (!maintenanceId) msgA += " กรอกรหัสผู้ตรวจสอบ,";
+    if (!allChecked) msgA += ` ติ๊ก Recheck ให้ครบ ${requiredCount} ข้อ,`;
+    if (!hasPhoto) msgA += " ถ่ายภาพ,";
+    btnApprove.innerHTML = `<i class="fa-regular fa-circle-check mr-2"></i> ${msgA.slice(0, -1)}`;
+    
+    btnReject.disabled = true;
+    btnReject.className = "w-full py-3 sm:py-3.5 bg-slate-200 text-slate-500 font-bold rounded-xl cursor-not-allowed transition text-sm sm:text-base";
+    btnReject.innerHTML = '<i class="fa-solid fa-circle-xmark mr-2"></i> ปฏิเสธ ส่งกลับ';
+  }
+}
+
 // ==========================================
-// 10. SUBMIT
+// 12. SUBMIT — OPERATOR
 // ==========================================
-function submitInspection() {
+function submitInspection(role) {
   const btnSubmit = document.getElementById("btnSubmit");
   btnSubmit.disabled = true;
   btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
@@ -477,6 +704,7 @@ function submitInspection() {
   
   const payload = {
     action: "submitInspection",
+    role: "OPERATOR",
     kksType: kksType,
     kksCode: document.getElementById("kksCode").value,
     description: document.getElementById("description").value,
@@ -504,7 +732,7 @@ function submitInspection() {
       chk_release: document.getElementById("chk_release").checked,
       chk_rackout: document.getElementById("chk_rackout").checked,
       chk_ground: document.getElementById("chk_ground").checked,
-      chk_ground_skip: groundSkipChk ? groundSkipChk.checked : false,  // ⭐ ส่ง skip flag
+      chk_ground_skip: groundSkipChk ? groundSkipChk.checked : false,
       chk_loto: document.getElementById("chk_loto").checked
     }
   };
@@ -516,7 +744,7 @@ function submitInspection() {
     body: JSON.stringify(payload)
   })
     .then(() => {
-      showToast("✅ บันทึกข้อมูลสำเร็จ! กำลังส่งการแจ้งเตือน", "success");
+      showToast("✅ OPERATOR: บันทึกสำเร็จ! กำลังส่งการแจ้งเตือน", "success");
       btnSubmit.innerHTML = '<i class="fa-regular fa-circle-check mr-2"></i> ส่งข้อมูลสำเร็จ!';
       btnSubmit.className = "w-full py-3 sm:py-3.5 bg-emerald-600 text-white font-bold rounded-xl transition text-sm sm:text-base";
       setTimeout(() => location.reload(), 3000);
@@ -524,13 +752,82 @@ function submitInspection() {
     .catch(err => {
       showToast("❌ เกิดข้อผิดพลาด: " + err.message, "error");
       btnSubmit.disabled = false;
-      btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> ส่งรายงานการตรวจสอบ';
+      btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> ส่งรายงาน OPERATOR';
       btnSubmit.className = "w-full py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm text-sm sm:text-base";
     });
 }
 
 // ==========================================
-// 11. EMAIL MANAGEMENT
+// 13. SUBMIT — MAINTENANCE
+// ==========================================
+function submitMaintenance(action) {
+  // action = 'APPROVE' | 'REJECT'
+  const btnApprove = document.getElementById("btnApprove");
+  const btnReject = document.getElementById("btnReject");
+  
+  const isApprove = action === "APPROVE";
+  const resultText = isApprove ? "อนุมัติ" : "ปฏิเสธ";
+  const resultColor = isApprove ? "emerald" : "red";
+  
+  btnApprove.disabled = true;
+  btnReject.disabled = true;
+  
+  const activeBtn = isApprove ? btnApprove : btnReject;
+  activeBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลัง${resultText}...`;
+
+  const payload = {
+    action: "submitMaintenance",
+    role: "MAINTENANCE",
+    result: action,  // APPROVE | REJECT
+    kksType: kksType,
+    kksCode: document.getElementById("kksCodeMT").value,
+    description: document.getElementById("descriptionMT").value,
+    local: document.getElementById("localFieldMT").value,
+    panel: document.getElementById("panelFieldMT").value,
+    rack: document.getElementById("rackFieldMT").value,
+    maintenanceId: document.getElementById("maintenanceId").value,
+    note: document.getElementById("maintenanceNote").value.trim(),
+    imageBase64: base64ImageMT,
+    imageMimeType: imageMimeTypeMT,
+    imageName: imageNameMT,
+    gps: gpsCoordsMT ? {
+      lat: gpsCoordsMT.lat,
+      lng: gpsCoordsMT.lng,
+      accuracy: gpsCoordsMT.accuracy
+    } : null,
+    checklist: {
+      mt_visual: document.getElementById("mt_visual").checked,
+      mt_ground: document.getElementById("mt_ground").checked,
+      mt_loto: document.getElementById("mt_loto").checked,
+      mt_breaker: document.getElementById("mt_breaker").checked,
+      mt_voltage: document.getElementById("mt_voltage").checked,
+      mt_ppe: document.getElementById("mt_ppe").checked,
+      mt_env: document.getElementById("mt_env").checked,
+      mt_approve: document.getElementById("mt_approve").checked
+    }
+  };
+
+  fetch(GAS_WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+    .then(() => {
+      const icon = isApprove ? "✅" : "❌";
+      showToast(`${icon} MAINTENANCE: ${resultText}สำเร็จ! กำลังส่งการแจ้งเตือน`, isApprove ? "success" : "warning");
+      activeBtn.innerHTML = `<i class="fa-regular fa-circle-check mr-2"></i> ${resultText}สำเร็จ!`;
+      activeBtn.className = `w-full py-3 sm:py-3.5 bg-${resultColor}-600 text-white font-bold rounded-xl transition text-sm sm:text-base`;
+      setTimeout(() => location.reload(), 3000);
+    })
+    .catch(err => {
+      showToast("❌ เกิดข้อผิดพลาด: " + err.message, "error");
+      validateMaintenanceForm();
+    });
+}
+
+// ==========================================
+// 14. EMAIL MANAGEMENT
 // ==========================================
 function resetEmailActionState() {
   document.getElementById("emailResultBox").classList.add("hidden");
@@ -591,7 +888,7 @@ function executeAddEmail() {
 
 function confirmDeleteEmail() {
   const email = document.getElementById("emailInput").value.trim().toLowerCase();
-  if (confirm(`คุณแน่ใจหรือว่าต้องการลบ Email "${email}" ออกจากระบบรับแจ้งเตือน?`)) {
+  if (confirm(`คุณแน่ใจหรือว่าต้องการลบ Email "${email}"?`)) {
     fetch(GAS_WEB_APP_URL, {
       method: "POST", mode: "no-cors",
       headers: { "Content-Type": "application/json" },
@@ -629,7 +926,7 @@ function loadEmailList() {
 }
 
 // ==========================================
-// 12. TOAST
+// 15. TOAST
 // ==========================================
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
@@ -647,13 +944,16 @@ function showToast(message, type = 'info') {
 }
 
 // ==========================================
-// 13. INIT
+// 16. INIT
 // ==========================================
 updateProgress();
+updateProgressMT();
 validateChecklistForm();
+validateMaintenanceForm();
 
 window.addEventListener('beforeunload', function() {
   if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+  if (mediaStreamMT) mediaStreamMT.getTracks().forEach(track => track.stop());
 });
 
-console.log('🔌 Breaker Safety Inspection v3.1 (MV + LV + GPS + Skip)');
+console.log('🔌 Breaker Safety Inspection v3.2 (Operator + Maintenance)');
