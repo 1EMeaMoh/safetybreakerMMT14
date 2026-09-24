@@ -6,7 +6,6 @@ const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3emiy06lay_rP
 // ==========================================
 // STATE
 // ==========================================
-// Operator
 let base64Image = "";
 let imageMimeType = "";
 let imageName = "";
@@ -14,18 +13,16 @@ let mediaStream = null;
 let completedSteps = new Set();
 let completedLvSteps = new Set();
 
-// Maintenance
 let base64ImageMT = "";
 let imageMimeTypeMT = "";
 let imageNameMT = "";
 let mediaStreamMT = null;
 let completedMtSteps = new Set();
+let completedMtLvSteps = new Set();
 
-// KKS Info
 let kksType = "MV";
 let kksData = {};
 
-// GPS
 let gpsCoords = null;
 let gpsCoordsMT = null;
 
@@ -37,10 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tab = parseInt(urlParams.get('tab')) || 2;
   const kks = urlParams.get('kks') || "MMP-T14BBA01GH001";
   
-  // Operator
   document.getElementById("kksCode").value = kks;
-  
-  // Maintenance
   document.getElementById("kksCodeMT").value = kks;
 
   fetchKksData(kks);
@@ -63,7 +57,7 @@ function updateClock() {
 }
 
 // ==========================================
-// 2. FETCH KKS DATA (MV / LV)
+// 2. FETCH KKS DATA
 // ==========================================
 function fetchKksData(kks) {
   fetch(`${GAS_WEB_APP_URL}?action=getKksData&kks=${encodeURIComponent(kks)}`)
@@ -73,13 +67,11 @@ function fetchKksData(kks) {
         kksType = (data.type || "MV").toUpperCase();
         kksData = data;
 
-        // Operator fields
         document.getElementById("description").value = data.description || "-";
         document.getElementById("localField").value = data.local || "-";
         document.getElementById("panelField").value = data.panel || "-";
         document.getElementById("rackField").value = data.rack || "-";
 
-        // Maintenance fields
         document.getElementById("descriptionMT").value = data.description || "-";
         document.getElementById("localFieldMT").value = data.local || "-";
         document.getElementById("panelFieldMT").value = data.panel || "-";
@@ -102,41 +94,49 @@ function fetchKksData(kks) {
 }
 
 function applyKksType(type) {
-  // Operator badge
   const badge = document.getElementById("typeBadge");
   const checklistMV = document.getElementById("checklistMV");
   const checklistLV = document.getElementById("checklistLV");
   
-  // Maintenance badge
   const badgeMT = document.getElementById("typeBadgeMT");
+  const checklistMT_MV = document.getElementById("checklistMT_MV");
+  const checklistMT_LV = document.getElementById("checklistMT_LV");
 
   if (type === "LV") {
     badge.textContent = "LV";
     badge.className = "type-badge lv";
     badge.classList.remove("hidden");
-    
-    badgeMT.textContent = "LV";
-    badgeMT.className = "type-badge lv";
-    badgeMT.classList.remove("hidden");
-    
     checklistMV.classList.add("hidden");
     checklistLV.classList.remove("hidden");
     completedSteps.clear();
     updateProgress();
+    
+    badgeMT.textContent = "LV";
+    badgeMT.className = "type-badge lv";
+    badgeMT.classList.remove("hidden");
+    checklistMT_MV.classList.add("hidden");
+    checklistMT_LV.classList.remove("hidden");
+    completedMtSteps.clear();
+    updateProgressMT();
+    
   } else {
     badge.textContent = "MV";
     badge.className = "type-badge mv";
     badge.classList.remove("hidden");
-    
-    badgeMT.textContent = "MV";
-    badgeMT.className = "type-badge mv";
-    badgeMT.classList.remove("hidden");
-    
     checklistMV.classList.remove("hidden");
     checklistLV.classList.add("hidden");
     completedLvSteps.clear();
     updateProgress();
+    
+    badgeMT.textContent = "MV";
+    badgeMT.className = "type-badge mv";
+    badgeMT.classList.remove("hidden");
+    checklistMT_MV.classList.remove("hidden");
+    checklistMT_LV.classList.add("hidden");
+    completedMtLvSteps.clear();
+    updateProgressMT();
   }
+  
   validateChecklistForm();
   validateMaintenanceForm();
 }
@@ -162,7 +162,7 @@ function switchTab(tabIndex) {
 }
 
 // ==========================================
-// 4. GPS (Operator + Maintenance)
+// 4. GPS
 // ==========================================
 function requestGPS() {
   const box = document.getElementById("gpsBox");
@@ -409,7 +409,7 @@ function stopCameraStreamMT() {
 }
 
 // ==========================================
-// 7. CHECKLIST — OPERATOR (MV)
+// 7. CHECKLIST — OPERATOR (MV) — บังคับ 8 ข้อ
 // ==========================================
 const MV_CHECKBOX_LIST = [
   "chk_ptw", "chk_ppe", "chk_led", "chk_selector",
@@ -423,16 +423,6 @@ function onStepCheck(stepNumber) {
   if (currentChk.checked) {
     completedSteps.add(stepNumber);
     item.classList.add('done');
-    item.classList.remove('skipped');
-    
-    if (stepNumber === 7) {
-      const skipWrapper = document.getElementById('skipGroundWrapper');
-      if (skipWrapper) {
-        skipWrapper.classList.add('hidden');
-        const skipChk = document.getElementById('chk_ground_skip');
-        if (skipChk) skipChk.checked = false;
-      }
-    }
     
     if (stepNumber < MV_CHECKBOX_LIST.length) {
       unlockStep(stepNumber + 1);
@@ -441,45 +431,9 @@ function onStepCheck(stepNumber) {
     completedSteps.delete(stepNumber);
     item.classList.remove('done');
     
-    if (stepNumber === 7) {
-      const skipWrapper = document.getElementById('skipGroundWrapper');
-      if (skipWrapper) skipWrapper.classList.remove('hidden');
-    }
-    
     lockFromStep(stepNumber + 1);
   }
 
-  updateProgress();
-  validateChecklistForm();
-}
-
-function onGroundSkipChange() {
-  const skipChk = document.getElementById("chk_ground_skip");
-  const groundChk = document.getElementById("chk_ground");
-  const item7 = groundChk.closest('.checklist-item');
-  
-  if (skipChk.checked) {
-    groundChk.checked = false;
-    groundChk.disabled = true;
-    item7.classList.remove('done');
-    item7.classList.add('skipped');
-    completedSteps.add(7);
-    unlockStep(8);
-    showToast("ข้ามข้อ 7 — Ground Switch", "info");
-  } else {
-    groundChk.disabled = false;
-    item7.classList.remove('skipped');
-    completedSteps.delete(7);
-    
-    const chk8 = document.getElementById("chk_loto");
-    if (chk8 && chk8.checked) {
-      chk8.checked = false;
-      completedSteps.delete(8);
-      chk8.closest('.checklist-item').classList.remove('done');
-    }
-    lockFromStep(8);
-  }
-  
   updateProgress();
   validateChecklistForm();
 }
@@ -491,11 +445,6 @@ function unlockStep(stepNumber) {
   nextChk.disabled = false;
   nextItem.classList.remove('disabled');
   nextItem.querySelector('label').classList.remove('cursor-not-allowed');
-  
-  if (stepNumber === 7) {
-    const skipWrapper = document.getElementById('skipGroundWrapper');
-    if (skipWrapper) skipWrapper.classList.remove('hidden');
-  }
 }
 
 function lockFromStep(stepNumber) {
@@ -506,18 +455,8 @@ function lockFromStep(stepNumber) {
     target.disabled = true;
     targetItem.classList.add('disabled');
     targetItem.classList.remove('done');
-    targetItem.classList.remove('skipped');
     targetItem.querySelector('label').classList.add('cursor-not-allowed');
     completedSteps.delete(i + 1);
-  }
-  
-  if (stepNumber <= 7) {
-    const skipWrapper = document.getElementById('skipGroundWrapper');
-    if (skipWrapper) {
-      skipWrapper.classList.add('hidden');
-      const skipChk = document.getElementById('chk_ground_skip');
-      if (skipChk) skipChk.checked = false;
-    }
   }
 }
 
@@ -559,7 +498,7 @@ function onLvStepCheck(stepNumber) {
 }
 
 // ==========================================
-// 9. CHECKLIST — MAINTENANCE (8 items)
+// 9. CHECKLIST — MAINTENANCE (MV — 8 items)
 // ==========================================
 const MT_CHECKBOX_LIST = [
   "mt_visual", "mt_ground", "mt_loto", "mt_breaker",
@@ -601,7 +540,46 @@ function onMtStepCheck(stepNumber) {
 }
 
 // ==========================================
-// 10. PROGRESS
+// 10. CHECKLIST — MAINTENANCE (LV — 3 items)
+// ==========================================
+const MT_LV_CHECKBOX_LIST = ["mt_lv_breaker", "mt_lv_rackout", "mt_lv_ppe"];
+
+function onMtLvStepCheck(stepNumber) {
+  const currentChk = document.getElementById(MT_LV_CHECKBOX_LIST[stepNumber - 1]);
+  const item = currentChk.closest('.checklist-item');
+
+  if (currentChk.checked) {
+    completedMtLvSteps.add(stepNumber);
+    item.classList.add('done');
+    
+    if (stepNumber < MT_LV_CHECKBOX_LIST.length) {
+      const nextChk = document.getElementById(MT_LV_CHECKBOX_LIST[stepNumber]);
+      const nextItem = nextChk.closest('.checklist-item');
+      nextChk.disabled = false;
+      nextItem.classList.remove('disabled');
+      nextItem.querySelector('label').classList.remove('cursor-not-allowed');
+    }
+  } else {
+    completedMtLvSteps.delete(stepNumber);
+    item.classList.remove('done');
+    
+    for (let i = stepNumber; i < MT_LV_CHECKBOX_LIST.length; i++) {
+      const target = document.getElementById(MT_LV_CHECKBOX_LIST[i]);
+      const targetItem = target.closest('.checklist-item');
+      target.checked = false;
+      target.disabled = true;
+      targetItem.classList.add('disabled');
+      targetItem.classList.remove('done');
+      targetItem.querySelector('label').classList.add('cursor-not-allowed');
+      completedMtLvSteps.delete(i + 1);
+    }
+  }
+  updateProgressMT();
+  validateMaintenanceForm();
+}
+
+// ==========================================
+// 11. PROGRESS
 // ==========================================
 function updateProgress() {
   const total = kksType === "LV" ? 3 : 8;
@@ -611,14 +589,14 @@ function updateProgress() {
 }
 
 function updateProgressMT() {
-  const total = 8;
-  const count = completedMtSteps.size;
+  const total = kksType === "LV" ? 3 : 8;
+  const count = kksType === "LV" ? completedMtLvSteps.size : completedMtSteps.size;
   document.getElementById('progressTextMT').textContent = `${count}/${total}`;
   document.getElementById('progressFillMT').style.width = `${(count / total) * 100}%`;
 }
 
 // ==========================================
-// 11. VALIDATION
+// 12. VALIDATION
 // ==========================================
 function validateChecklistForm() {
   const operatorId = document.getElementById("operatorId").value.trim();
@@ -633,12 +611,13 @@ function validateChecklistForm() {
     allRequiredChecked = required.every(id => document.getElementById(id).checked);
     requiredCount = 3;
   } else {
+    // ⭐ MV: บังคับ 8 ข้อ (รวมข้อ 7)
     const required = [
       "chk_ptw", "chk_ppe", "chk_led", "chk_selector",
-      "chk_release", "chk_rackout", "chk_loto"
+      "chk_release", "chk_rackout", "chk_ground", "chk_loto"
     ];
     allRequiredChecked = required.every(id => document.getElementById(id).checked);
-    requiredCount = 7;
+    requiredCount = 8;
   }
 
   if (operatorId && allRequiredChecked && hasPhoto) {
@@ -662,17 +641,26 @@ function validateMaintenanceForm() {
   const btnApprove = document.getElementById("btnApprove");
   const btnReject = document.getElementById("btnReject");
 
-  const required = MT_CHECKBOX_LIST;
-  const allChecked = required.every(id => document.getElementById(id).checked);
-  const requiredCount = 8;
+  let allChecked = false;
+  let requiredCount = 0;
+
+  if (kksType === "LV") {
+    // ⭐ LV: บังคับ 3 ข้อ
+    const required = MT_LV_CHECKBOX_LIST;
+    allChecked = required.every(id => document.getElementById(id).checked);
+    requiredCount = 3;
+  } else {
+    // ⭐ MV: บังคับ 8 ข้อ
+    const required = MT_CHECKBOX_LIST;
+    allChecked = required.every(id => document.getElementById(id).checked);
+    requiredCount = 8;
+  }
 
   if (maintenanceId && allChecked && hasPhoto) {
-    // Approve button
     btnApprove.disabled = false;
     btnApprove.className = "w-full py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm text-sm sm:text-base";
     btnApprove.innerHTML = '<i class="fa-solid fa-circle-check mr-2"></i> อนุมัติให้ปฏิบัติงาน';
     
-    // Reject button
     btnReject.disabled = false;
     btnReject.className = "w-full py-3 sm:py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition shadow-sm text-sm sm:text-base";
     btnReject.innerHTML = '<i class="fa-solid fa-circle-xmark mr-2"></i> ปฏิเสธ ส่งกลับ';
@@ -692,15 +680,13 @@ function validateMaintenanceForm() {
 }
 
 // ==========================================
-// 12. SUBMIT — OPERATOR
+// 13. SUBMIT — OPERATOR
 // ==========================================
 function submitInspection(role) {
   const btnSubmit = document.getElementById("btnSubmit");
   btnSubmit.disabled = true;
   btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
   btnSubmit.className = "w-full py-3 sm:py-3.5 bg-blue-600 text-white font-bold rounded-xl transition text-sm sm:text-base";
-
-  const groundSkipChk = document.getElementById("chk_ground_skip");
   
   const payload = {
     action: "submitInspection",
@@ -732,7 +718,6 @@ function submitInspection(role) {
       chk_release: document.getElementById("chk_release").checked,
       chk_rackout: document.getElementById("chk_rackout").checked,
       chk_ground: document.getElementById("chk_ground").checked,
-      chk_ground_skip: groundSkipChk ? groundSkipChk.checked : false,
       chk_loto: document.getElementById("chk_loto").checked
     }
   };
@@ -744,24 +729,21 @@ function submitInspection(role) {
     body: JSON.stringify(payload)
   })
     .then(() => {
-      showToast("✅ OPERATOR: บันทึกสำเร็จ! กำลังส่งการแจ้งเตือน", "success");
+      showToast("✅ OPERATOR: บันทึกสำเร็จ!", "success");
       btnSubmit.innerHTML = '<i class="fa-regular fa-circle-check mr-2"></i> ส่งข้อมูลสำเร็จ!';
       btnSubmit.className = "w-full py-3 sm:py-3.5 bg-emerald-600 text-white font-bold rounded-xl transition text-sm sm:text-base";
       setTimeout(() => location.reload(), 3000);
     })
     .catch(err => {
       showToast("❌ เกิดข้อผิดพลาด: " + err.message, "error");
-      btnSubmit.disabled = false;
-      btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> ส่งรายงาน OPERATOR';
-      btnSubmit.className = "w-full py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm text-sm sm:text-base";
+      validateChecklistForm();
     });
 }
 
 // ==========================================
-// 13. SUBMIT — MAINTENANCE
+// 14. SUBMIT — MAINTENANCE
 // ==========================================
 function submitMaintenance(action) {
-  // action = 'APPROVE' | 'REJECT'
   const btnApprove = document.getElementById("btnApprove");
   const btnReject = document.getElementById("btnReject");
   
@@ -778,7 +760,7 @@ function submitMaintenance(action) {
   const payload = {
     action: "submitMaintenance",
     role: "MAINTENANCE",
-    result: action,  // APPROVE | REJECT
+    result: action,
     kksType: kksType,
     kksCode: document.getElementById("kksCodeMT").value,
     description: document.getElementById("descriptionMT").value,
@@ -795,7 +777,11 @@ function submitMaintenance(action) {
       lng: gpsCoordsMT.lng,
       accuracy: gpsCoordsMT.accuracy
     } : null,
-    checklist: {
+    checklist: kksType === "LV" ? {
+      mt_lv_breaker: document.getElementById("mt_lv_breaker").checked,
+      mt_lv_rackout: document.getElementById("mt_lv_rackout").checked,
+      mt_lv_ppe: document.getElementById("mt_lv_ppe").checked
+    } : {
       mt_visual: document.getElementById("mt_visual").checked,
       mt_ground: document.getElementById("mt_ground").checked,
       mt_loto: document.getElementById("mt_loto").checked,
@@ -815,7 +801,7 @@ function submitMaintenance(action) {
   })
     .then(() => {
       const icon = isApprove ? "✅" : "❌";
-      showToast(`${icon} MAINTENANCE: ${resultText}สำเร็จ! กำลังส่งการแจ้งเตือน`, isApprove ? "success" : "warning");
+      showToast(`${icon} MAINTENANCE: ${resultText}สำเร็จ!`, isApprove ? "success" : "warning");
       activeBtn.innerHTML = `<i class="fa-regular fa-circle-check mr-2"></i> ${resultText}สำเร็จ!`;
       activeBtn.className = `w-full py-3 sm:py-3.5 bg-${resultColor}-600 text-white font-bold rounded-xl transition text-sm sm:text-base`;
       setTimeout(() => location.reload(), 3000);
@@ -827,7 +813,7 @@ function submitMaintenance(action) {
 }
 
 // ==========================================
-// 14. EMAIL MANAGEMENT
+// 15. EMAIL MANAGEMENT
 // ==========================================
 function resetEmailActionState() {
   document.getElementById("emailResultBox").classList.add("hidden");
@@ -926,7 +912,7 @@ function loadEmailList() {
 }
 
 // ==========================================
-// 15. TOAST
+// 16. TOAST
 // ==========================================
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
@@ -944,7 +930,7 @@ function showToast(message, type = 'info') {
 }
 
 // ==========================================
-// 16. INIT
+// 17. INIT
 // ==========================================
 updateProgress();
 updateProgressMT();
@@ -956,4 +942,4 @@ window.addEventListener('beforeunload', function() {
   if (mediaStreamMT) mediaStreamMT.getTracks().forEach(track => track.stop());
 });
 
-console.log('🔌 Breaker Safety Inspection v3.2 (Operator + Maintenance)');
+console.log('🔌 Breaker Safety Inspection v3.3 (MT LV + Force Ground)');
